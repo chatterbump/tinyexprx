@@ -6,6 +6,22 @@
  *
  * This software is based on TINYEXPR by Lewis Van Winkle
  * (http://CodePlea.com).
+ * # TinyExprX
+An expression parer for complex numbers
+
+TinyExprX is a parser and evaluation engine that supports complex number arithmetic.
+
+TinyExprX supports standard complex number presentations, e.g. 5+3I where I = √-1, and complex number operators and expressions, e.g. e^(I*pi)+1. TinyExprX supports
+standard C99 complex library and runtime binding of complex number variables.
+
+This parser is based on TinyExpr (https://github.com/codeplea/tinyexpr) by Lewis Van Winkle.
+
+A couple of changes are fundamental changes are implemented in TinyExprX compared with TinyExpr:
+
+- TinyExprX understands complex numbers like 3+2I and complex variables can be passed and evaluated at runtime,
+- The evaluation result of an expression in TinyExprX is a complex number that can be cast into a C complex type or a C++ std::complex<double> or a double[2].
+- A number of expressions are undefined or uncommon in complex arithmetic and removed in TinyExprX, including factorial and combinatorial functions NCR and NPR.
+  log always has natural base ln is not defined.
  *
  */
 
@@ -96,18 +112,24 @@ void tx_free(tx_expr *n) {
     free(n);
 }
 
+// all functions need to return complex
 static d_cx i(void) {return I;}
 static d_cx pi(void) {return 3.14159265358979323846;}
 static d_cx e(void) {return 2.71828182845904523536;}
+
+static d_cx _cabs(d_cx a) {return cabs(a);}
+static d_cx _carg(d_cx a) {return carg(a);}
+static d_cx _cimag(d_cx a) {return cimag(a);}
+static d_cx _creal(d_cx a) {return creal(a);}
 
 
 static const tx_variable functions[] = {
     /* must be in alphabetical order */
     {"I", i,            TX_FUNCTION0 | TX_FLAG_PURE, 0},
-    {"abs", cabs,       TX_FUNCTION1 | TX_FLAG_PURE, 0},
+    {"abs", _cabs,      TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"acos", cacos,     TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"acosh", cacosh,   TX_FUNCTION1 | TX_FLAG_PURE, 0},
-    {"arg", carg,       TX_FUNCTION1 | TX_FLAG_PURE, 0},
+    {"arg", _carg,      TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"asin", casin,     TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"asinh", casinh,   TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"atan", catan,     TX_FUNCTION1 | TX_FLAG_PURE, 0},
@@ -117,11 +139,11 @@ static const tx_variable functions[] = {
     {"cosh", ccosh,     TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"e", e,            TX_FUNCTION0 | TX_FLAG_PURE, 0},
     {"exp", cexp,       TX_FUNCTION1 | TX_FLAG_PURE, 0},
-    {"imag", cimag,     TX_FUNCTION1 | TX_FLAG_PURE, 0},
+    {"imag", _cimag,    TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"log", clog,       TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"pi", pi,          TX_FUNCTION0 | TX_FLAG_PURE, 0},
     {"pow", cpow,       TX_FUNCTION2 | TX_FLAG_PURE, 0},
-    {"real", creal,     TX_FUNCTION1 | TX_FLAG_PURE, 0},
+    {"real", _creal,    TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"sin", csin,       TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"sinh", csinh,     TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"sqrt", csqrt,     TX_FUNCTION1 | TX_FLAG_PURE, 0},
@@ -129,6 +151,7 @@ static const tx_variable functions[] = {
     {"tanh", ctanh,     TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {0, 0, 0, 0}
 };
+
 
 static const tx_variable *find_builtin(const char *name, int len) {
     int imin = 0;
@@ -147,9 +170,9 @@ static const tx_variable *find_builtin(const char *name, int len) {
             imax = i - 1;
         }
     }
-
     return 0;
 }
+
 
 static const tx_variable *find_lookup(const state *s, const char *name, int len) {
     int iters;
@@ -163,7 +186,6 @@ static const tx_variable *find_lookup(const state *s, const char *name, int len)
     }
     return 0;
 }
-
 
 
 static d_cx add(d_cx a, d_cx b) {return a+b;}
@@ -593,6 +615,7 @@ d_cx tx_interp(const char *expression, int *error) {
     return ret;
 }
 
+
 static void pn (const tx_expr *n, int depth) {
     int i, arity;
     printf("%*s", depth, "");
@@ -622,6 +645,7 @@ static void pn (const tx_expr *n, int depth) {
 void tx_print(const tx_expr *n) {
     pn(n, 0);
 }
+
 
 void tx_print_num(const d_cx* n) {
     if (cimag(*n) == 0)
