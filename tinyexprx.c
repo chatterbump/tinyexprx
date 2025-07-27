@@ -116,6 +116,7 @@ void tx_free(tx_expr *n) {
 static d_cx i(void) {return I;}
 static d_cx pi(void) {return 3.14159265358979323846;}
 static d_cx e(void) {return 2.71828182845904523536;}
+static d_cx infinity() {return INFINITY;}
 
 static d_cx _cabs(d_cx a) {return cabs(a);}
 static d_cx _carg(d_cx a) {return carg(a);}
@@ -140,6 +141,7 @@ static const tx_variable functions[] = {
     {"e", e,            TX_FUNCTION0 | TX_FLAG_PURE, 0},
     {"exp", cexp,       TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"imag", _cimag,    TX_FUNCTION1 | TX_FLAG_PURE, 0},
+    {"inf", infinity,   TX_FUNCTION0 | TX_FLAG_PURE, 0},
     {"log", clog,       TX_FUNCTION1 | TX_FLAG_PURE, 0},
     {"pi", pi,          TX_FUNCTION0 | TX_FLAG_PURE, 0},
     {"pow", cpow,       TX_FUNCTION2 | TX_FLAG_PURE, 0},
